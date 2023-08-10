@@ -3,8 +3,8 @@ import Task from './task.js'
 import Modal from './modal.js'
 
 const initialData = [
-  { id: 1, title: 'Buy milk', priority: 'low', isComplete: true },
-  { id: 2, title: 'Buy eggs', priority: 'high', isComplete: true },
+  { id: 1, title: 'Buy milk', priority: 'low', isComplete: false },
+  { id: 2, title: 'Buy eggs', priority: 'high', isComplete: false },
 ]
 
 function init() {
@@ -19,6 +19,7 @@ function init() {
 class Model {
   constructor() {
     this.tasks = []
+    this.onTodoListChanged = () => {}
     initialData.forEach((task) => this.addTask(task))
   }
 
@@ -33,22 +34,32 @@ class Model {
     newTask.id =
       this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1
     this.tasks.push(newTask)
+
+    this.onTodoListChanged(this.tasks)
   }
 
   editTask(id, newTitle) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, title: newTitle } : task
     )
+    this.onTodoListChanged(this.tasks)
   }
 
   deleteTask(id) {
     this.tasks = this.tasks.filter((task) => task.id !== id)
+
+    this.onTodoListChanged(this.tasks)
   }
 
   toggleTask(id) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, isComplete: !task.isComplete } : task
     )
+    this.onTodoListChanged(this.tasks)
+  }
+
+  bindTodoListChanged(callback) {
+    this.onTodoListChanged = callback
   }
 }
 
@@ -89,7 +100,7 @@ class View {
     return element
   }
 
-  get _taskText() {
+  get _taskTitle() {
     return this.input.value
   }
 
@@ -136,6 +147,37 @@ class View {
     }
   }
 
+  bindAddTask(handler) {
+    this.form.addEventListener('submit', (e) => {
+      e.preventDefault()
+
+      if (this._taskTitle) {
+        handler({ title: this._taskTitle })
+        this._resetInput()
+      }
+    })
+  }
+
+  bindDeleteTask(handler) {
+    this.todoList.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete')) {
+        const id = parseInt(e.target.parentElement.id)
+
+        handler(id)
+      }
+    })
+  }
+
+  bindToggleTask(handler) {
+    this.todoList.addEventListener('change', (e) => {
+      if (e.target.type === 'checkbox') {
+        const id = parseInt(e.target.parentElement.id)
+
+        handler(id)
+      }
+    })
+  }
+
   displayModal() {
     const modal = new Modal()
     this.app.append(modal.modal)
@@ -146,6 +188,36 @@ class Controller {
   constructor(model, view) {
     this.model = model
     this.view = view
+
+    this.view.bindAddTask(this.handleAddTask)
+    this.view.bindDeleteTask(this.handleDeleteTask)
+    this.view.bindToggleTask(this.handleToggleTask)
+    // this.view.bindEditTask(this.handleEditTask)
+
+    this.model.bindTodoListChanged(this.onTodoListChanged)
+
+    //Display initial todos
+    this.onTodoListChanged(this.model.tasks)
+  }
+
+  onTodoListChanged = (tasks) => {
+    this.view.displayTasks(tasks)
+  }
+
+  handleAddTask = (taskTitle) => {
+    this.model.addTask(taskTitle)
+  }
+
+  handleEditTask = (id, newTitle) => {
+    this.model.editTask(id, newTitle)
+  }
+
+  handleDeleteTask = (id) => {
+    this.model.deleteTask(id)
+  }
+
+  handleToggleTask = (id) => {
+    this.model.toggleTask(id)
   }
 }
 
