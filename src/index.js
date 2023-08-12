@@ -1,6 +1,8 @@
 import './style.css'
 import Task from './task.js'
 import Modal from './modal.js'
+import loadSidebar from './nav.js'
+// import 'material-symbols'
 
 const initialData = [
   { id: 1, title: 'Buy milk', priority: 'low', isComplete: false },
@@ -69,6 +71,18 @@ class Model {
     project.toggleTask(taskId)
     this.onProjectsChanged(project)
   }
+
+  getToday() {
+    const todaysTasks = []
+    this.projects.forEach((project) =>
+      project.tasks.forEach((task) => {
+        if (task.dueDate.toDateString() === new Date().toDateString()) {
+          todaysTasks.push(task)
+        }
+      })
+    )
+    return todaysTasks
+  }
 }
 
 class Project {
@@ -81,7 +95,7 @@ class Project {
     const newTask = new Task(
       task.title,
       task.description,
-      task.dueDate,
+      task.dueDate || new Date(),
       task.priority,
       task.isComplete
     )
@@ -111,6 +125,11 @@ class View {
   constructor() {
     this.app = this.getElement('#root')
 
+    this.header = this.createElement('header')
+    this.header.textContent = 'HEADER'
+
+    this.main = this.createElement('main', 'main')
+
     this.title = this.createElement('h1')
     this.title.textContent = 'Todo List'
 
@@ -128,7 +147,9 @@ class View {
 
     this.form.append(this.input, this.submitBtn)
 
-    this.app.append(this.title, this.form, this.todoList)
+    this.main.append(this.title, this.form, this.todoList)
+
+    this.app.append(this.header, loadSidebar(), this.main)
 
     this.temporaryTaskTitle
     this._initLocalListeners()

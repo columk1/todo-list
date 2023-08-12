@@ -2,6 +2,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  margin: 0;
 }
 
 html {
@@ -10,10 +11,54 @@ html {
   color: #444;
 }
 
+ul,
+li {
+  list-style: none;
+  padding-left: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 #root {
+  width: 100vw;
+  display: grid;
+  grid-template-columns: clamp(180px, 25%, 240px) 1fr;
+  grid-template-rows: min-content 1fr;
+  /* gap: 25px; */
+}
+
+header {
+  grid-column: 1 / -1;
+  grid-row: 1 / 2;
+  height: 60px;
+  background-color: #007bff;
+  text-align: center;
+}
+
+.sidebar {
+  min-height: 100vh;
+  grid-row: 2 / 3;
+  grid-column: 1 / 2;
+  display: grid;
+  grid-template-rows: min-content;
+  background-color: grey;
+}
+
+.sidebar-nav {
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.main {
   max-width: 450px;
   margin: 2rem auto;
   padding: 0 1rem;
+  padding-right: 32px;
 }
 
 form {
@@ -62,7 +107,7 @@ ul {
   padding: 0;
 }
 
-li {
+main li {
   display: flex;
   align-items: center;
   padding: 1rem;
@@ -71,7 +116,7 @@ li {
   border-radius: 4px;
 }
 
-li span {
+main li span {
   display: inline-block;
   padding: 0.5rem;
   width: 250px;
@@ -79,11 +124,11 @@ li span {
   border: 2px solid transparent;
 }
 
-li span:hover {
+main li span:hover {
   background: rgba(179, 215, 255, 0.52);
 }
 
-li span:focus {
+main li span:focus {
   outline: 0;
   border: 2px solid #007bff;
   background: rgba(179, 207, 255, 0.52);
