@@ -4,13 +4,15 @@ export default class Task {
     description,
     dueDate = 'No date',
     priority,
-    isComplete = false
+    isComplete = false,
+    project
   ) {
     this.title = title
     this.description = description
     this.dueDate = dueDate
     this.priority = priority
     this.isComplete = isComplete
+    this.project = project
   }
 
   setTitle(name) {
@@ -38,9 +40,10 @@ export default class Task {
   }
 
   getDateFormatted() {
-    const day = this.dueDate.split('/')[0]
-    const month = this.dueDate.split('/')[1]
-    const year = this.dueDate.split('/')[2]
-    return `${month}/${day}/${year}`
+    // const day = this.dueDate.split('/')[0]
+    // const month = this.dueDate.split('/')[1]
+    // const year = this.dueDate.split('/')[2]
+    // return `${month}/${day}/${year}`
+    return this.dueDate.toDateString()
   }
 }

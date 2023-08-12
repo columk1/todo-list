@@ -22,54 +22,50 @@ function init() {
 
 class Model {
   constructor() {
-    this.projects = []
-    const inbox = new Project('Inbox')
-    initialData.forEach((task) => inbox.addTask(task))
+    this.tasks = []
+    this.onTasksChanged = () => {}
 
-    this.projects.push(inbox)
-
-    this.onProjectsChanged = () => {}
+    initialData.forEach((task) => this.addTask(task))
   }
 
-  addProject(project) {
-    this.projects.push(project)
-    this.onProjectsChanged(this.projects)
+  bindTasksChanged(callback) {
+    this.onTasksChanged = callback
   }
 
-  bindProjectsChanged(callback) {
-    this.onProjectsChanged = callback
-  }
-
-  addTask(projectTitle, task) {
-    const project = this.projects.find(
-      (project) => project.title === projectTitle
+  addTask(task) {
+    const newTask = new Task(
+      task.title,
+      task.description,
+      task.dueDate || new Date(),
+      task.priority,
+      task.isComplete,
+      task.project
     )
-    project.addTask(task)
-    this.onProjectsChanged(project)
+    newTask.id =
+      this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1
+    this.tasks.push(newTask)
+
+    this.onTasksChanged(this.tasks)
   }
 
-  editTask(projectTitle, taskId, newTitle) {
-    const project = this.projects.find(
-      (project) => project.title === projectTitle
+  editTask(id, newTitle) {
+    this.tasks = this.tasks.map((task) =>
+      task.id === id ? { ...task, title: newTitle } : task
     )
-    project.editTask(taskId, newTitle)
-    this.onProjectsChanged(project)
+    this.onTasksChanged(this.tasks)
   }
 
-  deleteTask(projectTitle, taskId) {
-    const project = this.projects.find(
-      (project) => project.title === projectTitle
-    )
-    project.deleteTask(taskId)
-    this.onProjectsChanged(project)
+  deleteTask(id) {
+    this.tasks = this.tasks.filter((task) => task.id !== id)
+
+    this.onTasksChanged(this.tasks)
   }
 
-  toggleTask(projectTitle, taskId) {
-    const project = this.projects.find(
-      (project) => project.title === projectTitle
+  toggleTask(id) {
+    this.tasks = this.tasks.map((task) =>
+      task.id === id ? { ...task, isComplete: !task.isComplete } : task
     )
-    project.toggleTask(taskId)
-    this.onProjectsChanged(project)
+    this.onTasksChanged(this.tasks)
   }
 
   getToday() {
@@ -82,42 +78,6 @@ class Model {
       })
     )
     return todaysTasks
-  }
-}
-
-class Project {
-  constructor(title) {
-    this.title = title
-    this.tasks = []
-  }
-
-  addTask(task) {
-    const newTask = new Task(
-      task.title,
-      task.description,
-      task.dueDate || new Date(),
-      task.priority,
-      task.isComplete
-    )
-    newTask.id =
-      this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1
-    this.tasks.push(newTask)
-  }
-
-  editTask(id, newTitle) {
-    this.tasks = this.tasks.map((task) =>
-      task.id === id ? { ...task, title: newTitle } : task
-    )
-  }
-
-  deleteTask(id) {
-    this.tasks = this.tasks.filter((task) => task.id !== id)
-  }
-
-  toggleTask(id) {
-    this.tasks = this.tasks.map((task) =>
-      task.id === id ? { ...task, isComplete: !task.isComplete } : task
-    )
   }
 }
 
@@ -180,10 +140,10 @@ class View {
     this.input.value = ''
   }
 
-  displayProject(project) {
-    this.title.textContent = project.title
-    this.displayTasks(project.tasks)
-  }
+  // displayProject(task) {
+  //   this.title.textContent = task.project
+  //   this.displayTasks(tasks)
+  // }
 
   displayTasks(tasks) {
     while (this.todoList.firstChild) {
@@ -229,7 +189,7 @@ class View {
       e.preventDefault()
 
       if (this._taskTitle) {
-        handler(this._projectTitle, { title: this._taskTitle })
+        handler({ title: this._taskTitle })
         this._resetInput()
       }
     })
@@ -240,7 +200,7 @@ class View {
       if (e.target.classList.contains('delete')) {
         const id = parseInt(e.target.parentElement.id)
 
-        handler(this._projectTitle, id)
+        handler(id)
       }
     })
   }
@@ -250,7 +210,7 @@ class View {
       if (e.target.type === 'checkbox') {
         const id = parseInt(e.target.parentElement.id)
 
-        handler(this._projectTitle, id)
+        handler(id)
       }
     })
   }
@@ -270,7 +230,7 @@ class View {
       if (this._temporaryTaskTitle) {
         const id = parseInt(e.target.parentElement.id)
 
-        handler(this._projectTitle, id, this._temporaryTaskTitle)
+        handler(id, this._temporaryTaskTitle)
         this._temporaryTaskTitle = ''
       }
     })
@@ -292,30 +252,30 @@ class Controller {
     this.view.bindToggleTask(this.handleToggleTask)
     this.view.bindEditTask(this.handleEditTask)
 
-    this.model.bindProjectsChanged(this.onProjectsChanged)
+    this.model.bindTasksChanged(this.onTasksChanged)
 
     //Display initial todos
-    this.onProjectsChanged(this.model.projects[0])
+    this.onTasksChanged(this.model.tasks)
   }
 
-  onProjectsChanged = (project) => {
-    this.view.displayProject(project)
+  onTasksChanged = (tasks) => {
+    this.view.displayTasks(tasks)
   }
 
-  handleAddTask = (projectTitle, task) => {
-    this.model.addTask(projectTitle, task)
+  handleAddTask = (task) => {
+    this.model.addTask(task)
   }
 
-  handleEditTask = (projectTitle, id, newTitle) => {
-    this.model.editTask(projectTitle, id, newTitle)
+  handleEditTask = (id, newTitle) => {
+    this.model.editTask(id, newTitle)
   }
 
-  handleDeleteTask = (projectTitle, id) => {
-    this.model.deleteTask(projectTitle, id)
+  handleDeleteTask = (id) => {
+    this.model.deleteTask(id)
   }
 
-  handleToggleTask = (projectTitle, id) => {
-    this.model.toggleTask(projectTitle, id)
+  handleToggleTask = (id) => {
+    this.model.toggleTask(id)
   }
 }
 
