@@ -16,11 +16,65 @@ function init() {
   window.app = new Controller(new Model(), new View())
 }
 
+// Move this.onToDoListChanged to the Model, not the project class.
+
 class Model {
   constructor() {
+    this.projects = []
+    const inbox = new Project('Inbox')
+    initialData.forEach((task) => inbox.addTask(task))
+
+    this.projects.push(inbox)
+
+    this.onProjectsChanged = () => {}
+  }
+
+  addProject(project) {
+    this.projects.push(project)
+    this.onProjectsChanged(this.projects)
+  }
+
+  bindProjectsChanged(callback) {
+    this.onProjectsChanged = callback
+  }
+
+  addTask(projectTitle, task) {
+    const project = this.projects.find(
+      (project) => project.title === projectTitle
+    )
+    project.addTask(task)
+    this.onProjectsChanged(project)
+  }
+
+  editTask(projectTitle, taskId, newTitle) {
+    const project = this.projects.find(
+      (project) => project.title === projectTitle
+    )
+    project.editTask(taskId, newTitle)
+    this.onProjectsChanged(project)
+  }
+
+  deleteTask(projectTitle, taskId) {
+    const project = this.projects.find(
+      (project) => project.title === projectTitle
+    )
+    project.deleteTask(taskId)
+    this.onProjectsChanged(project)
+  }
+
+  toggleTask(projectTitle, taskId) {
+    const project = this.projects.find(
+      (project) => project.title === projectTitle
+    )
+    project.toggleTask(taskId)
+    this.onProjectsChanged(project)
+  }
+}
+
+class Project {
+  constructor(title) {
+    this.title = title
     this.tasks = []
-    this.onTodoListChanged = () => {}
-    initialData.forEach((task) => this.addTask(task))
   }
 
   addTask(task) {
@@ -34,32 +88,22 @@ class Model {
     newTask.id =
       this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1
     this.tasks.push(newTask)
-
-    this.onTodoListChanged(this.tasks)
   }
 
   editTask(id, newTitle) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, title: newTitle } : task
     )
-    this.onTodoListChanged(this.tasks)
   }
 
   deleteTask(id) {
     this.tasks = this.tasks.filter((task) => task.id !== id)
-
-    this.onTodoListChanged(this.tasks)
   }
 
   toggleTask(id) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, isComplete: !task.isComplete } : task
     )
-    this.onTodoListChanged(this.tasks)
-  }
-
-  bindTodoListChanged(callback) {
-    this.onTodoListChanged = callback
   }
 }
 
@@ -85,6 +129,9 @@ class View {
     this.form.append(this.input, this.submitBtn)
 
     this.app.append(this.title, this.form, this.todoList)
+
+    this.temporaryTaskTitle
+    this._initLocalListeners()
   }
 
   createElement(tag, className) {
@@ -100,12 +147,21 @@ class View {
     return element
   }
 
+  get _projectTitle() {
+    return this.title.textContent
+  }
+
   get _taskTitle() {
     return this.input.value
   }
 
   _resetInput() {
     this.input.value = ''
+  }
+
+  displayProject(project) {
+    this.title.textContent = project.title
+    this.displayTasks(project.tasks)
   }
 
   displayTasks(tasks) {
@@ -152,7 +208,7 @@ class View {
       e.preventDefault()
 
       if (this._taskTitle) {
-        handler({ title: this._taskTitle })
+        handler(this._projectTitle, { title: this._taskTitle })
         this._resetInput()
       }
     })
@@ -163,7 +219,7 @@ class View {
       if (e.target.classList.contains('delete')) {
         const id = parseInt(e.target.parentElement.id)
 
-        handler(id)
+        handler(this._projectTitle, id)
       }
     })
   }
@@ -173,7 +229,28 @@ class View {
       if (e.target.type === 'checkbox') {
         const id = parseInt(e.target.parentElement.id)
 
-        handler(id)
+        handler(this._projectTitle, id)
+      }
+    })
+  }
+
+  // Update temporary state
+  _initLocalListeners() {
+    this.todoList.addEventListener('input', (e) => {
+      if (e.target.className === 'editable') {
+        this._temporaryTaskTitle = e.target.innerText
+      }
+    })
+  }
+
+  // Send the completed value to the model
+  bindEditTask(handler) {
+    this.todoList.addEventListener('focusout', (e) => {
+      if (this._temporaryTaskTitle) {
+        const id = parseInt(e.target.parentElement.id)
+
+        handler(this._projectTitle, id, this._temporaryTaskTitle)
+        this._temporaryTaskTitle = ''
       }
     })
   }
@@ -192,32 +269,32 @@ class Controller {
     this.view.bindAddTask(this.handleAddTask)
     this.view.bindDeleteTask(this.handleDeleteTask)
     this.view.bindToggleTask(this.handleToggleTask)
-    // this.view.bindEditTask(this.handleEditTask)
+    this.view.bindEditTask(this.handleEditTask)
 
-    this.model.bindTodoListChanged(this.onTodoListChanged)
+    this.model.bindProjectsChanged(this.onProjectsChanged)
 
     //Display initial todos
-    this.onTodoListChanged(this.model.tasks)
+    this.onProjectsChanged(this.model.projects[0])
   }
 
-  onTodoListChanged = (tasks) => {
-    this.view.displayTasks(tasks)
+  onProjectsChanged = (project) => {
+    this.view.displayProject(project)
   }
 
-  handleAddTask = (taskTitle) => {
-    this.model.addTask(taskTitle)
+  handleAddTask = (projectTitle, task) => {
+    this.model.addTask(projectTitle, task)
   }
 
-  handleEditTask = (id, newTitle) => {
-    this.model.editTask(id, newTitle)
+  handleEditTask = (projectTitle, id, newTitle) => {
+    this.model.editTask(projectTitle, id, newTitle)
   }
 
-  handleDeleteTask = (id) => {
-    this.model.deleteTask(id)
+  handleDeleteTask = (projectTitle, id) => {
+    this.model.deleteTask(projectTitle, id)
   }
 
-  handleToggleTask = (id) => {
-    this.model.toggleTask(id)
+  handleToggleTask = (projectTitle, id) => {
+    this.model.toggleTask(projectTitle, id)
   }
 }
 
