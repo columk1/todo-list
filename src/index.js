@@ -39,12 +39,17 @@ class Model {
     this.tasks = []
     this.projects = []
     this.onTasksChanged = () => {}
+    this.onProjectsChanged = () => {}
 
     initialData.forEach((task) => this.addTask(task))
   }
 
   bindTasksChanged(callback) {
     this.onTasksChanged = callback
+  }
+
+  bindProjectsChanged(callback) {
+    this.onProjectsChanged = callback
   }
 
   addTask(task) {
@@ -72,7 +77,6 @@ class Model {
 
   deleteTask(id) {
     this.tasks = this.tasks.filter((task) => task.id !== id)
-
     this.onTasksChanged(this.tasks)
   }
 
@@ -115,12 +119,20 @@ class Model {
 
   addProject(title) {
     this.projects.push(title)
+
+    this.onProjectsChanged(this.projects)
   }
 
   deleteProject(index) {
+    let projectTitle = this.projects[index]
+    this.tasks.forEach((task) => {
+      if (task.project === projectTitle) {
+        this.deleteTask(task.id)
+      }
+    })
     this.projects.splice(index, 1)
 
-    // this.onProjectsChanged(this.projects)
+    this.onProjectsChanged(this.projects)
   }
 
   getProjectTasks(projectTitle) {
@@ -298,11 +310,14 @@ class View {
   bindDisplayInbox(handler) {
     const inbox = document.querySelector('#inbox')
     inbox.addEventListener('click', (e) => {
-      this.title.textContent = 'Inbox'
-      this.project = null
       handler()
-      this.toggleActive(inbox)
     })
+  }
+
+  toggleInbox() {
+    this.title.textContent = 'Inbox'
+    this.project = null
+    this.toggleActive(inbox)
   }
 
   bindDisplayToday(handler) {
@@ -337,6 +352,7 @@ class View {
       if (e.target.classList.contains('delete-project-btn')) {
         const id = parseInt(e.target.parentElement.id)
         handler(id)
+        e.stopImmediatePropagation()
       }
     })
   }
@@ -366,7 +382,7 @@ class View {
     element.classList.add('active-link')
   }
 
-  onProjectsChanged(projects) {
+  displayProjects(projects) {
     const projectsList = document.querySelector('.project-links')
     const newProjectBtn = projectsList.lastChild
     projectsList.innerHTML = ''
@@ -374,6 +390,13 @@ class View {
       projectsList.prepend(addProject(project, index))
     })
     projectsList.append(newProjectBtn)
+    // projects.some((project) => {
+    //   console.log('project.some running')
+    //   if (project !== this.project) {
+    //     console.log('if statement true')
+    //     this.displayInbox()
+    //   }
+    // })
   }
 
   updateTitle(title) {
@@ -405,6 +428,7 @@ class Controller {
     this.view.bindDisplayThisWeek(this.handleDisplayThisWeek)
 
     this.model.bindTasksChanged(this.onTasksChanged)
+    this.model.bindProjectsChanged(this.onProjectsChanged)
 
     //Display initial todos
     this.displayInbox()
@@ -412,6 +436,7 @@ class Controller {
 
   displayInbox = () => {
     this.view.displayTasks(this.model.tasks)
+    this.view.toggleInbox()
   }
 
   onTasksChanged = (tasks) => {
@@ -424,6 +449,7 @@ class Controller {
       switch (currentPage) {
         case 'inbox':
           this.view.displayTasks(tasks)
+          this.view.toggleInbox() // Needs to be refactored
           break
         case 'today':
           this.view.displayTasks(this.model.getToday())
@@ -435,6 +461,12 @@ class Controller {
           this.view.displayTasks(tasks)
       }
     }
+  }
+
+  onProjectsChanged = (projects) => {
+    this.view.displayProjects(projects)
+    console.log(this.view.project)
+    if (!projects.includes(this.view.project)) this.displayInbox()
   }
 
   handleAddTask = (task) => {
@@ -463,12 +495,10 @@ class Controller {
 
   handleNewProject = (title) => {
     this.model.addProject(title)
-    this.view.onProjectsChanged(this.model.projects)
   }
 
   handleDeleteProject = (index) => {
     this.model.deleteProject(index)
-    this.view.onProjectsChanged(this.model.projects)
   }
 
   handleDisplayProject = (index) => {
