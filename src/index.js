@@ -1,12 +1,26 @@
 import './style.css'
 import Task from './task.js'
+import Project from './project.js'
 import Modal from './modal.js'
-import loadSidebar from './nav.js'
+import { loadSidebar, createElement, addProject } from './nav.js'
 // import 'material-symbols'
 
 const initialData = [
-  { id: 1, title: 'Buy milk', priority: 'low', isComplete: false },
-  { id: 2, title: 'Buy eggs', priority: 'high', isComplete: false },
+  {
+    id: 1,
+    title: 'Buy milk',
+    dueDate: new Date(),
+    priority: 'low',
+    isComplete: false,
+  },
+  {
+    id: 2,
+    title: 'Buy eggs',
+    dueDate: new Date(),
+    priority: 'high',
+    isComplete: false,
+    project: 'Shopping',
+  },
 ]
 
 function init() {
@@ -23,6 +37,7 @@ function init() {
 class Model {
   constructor() {
     this.tasks = []
+    this.projects = []
     this.onTasksChanged = () => {}
 
     initialData.forEach((task) => this.addTask(task))
@@ -36,7 +51,7 @@ class Model {
     const newTask = new Task(
       task.title,
       task.description,
-      task.dueDate || new Date(),
+      task.dueDate,
       task.priority,
       task.isComplete,
       task.project
@@ -70,15 +85,55 @@ class Model {
 
   getToday() {
     const todaysTasks = []
-    this.projects.forEach((project) =>
-      project.tasks.forEach((task) => {
+    this.tasks.forEach((task) => {
+      if (task.dueDate instanceof Date) {
         if (task.dueDate.toDateString() === new Date().toDateString()) {
           todaysTasks.push(task)
         }
-      })
-    )
+      }
+    })
     return todaysTasks
   }
+
+  getThisWeek() {
+    const thisWeekTasks = []
+    this.tasks.forEach((task) => {
+      if (task.dueDate instanceof Date) {
+        if (
+          task.dueDate.toDateString() >= new Date().toDateString() &&
+          task.dueDate.toDateString() <=
+            new Date(
+              new Date().setDate(new Date().getDate() + 7)
+            ).toDateString()
+        ) {
+          thisWeekTasks.push(task)
+        }
+      }
+    })
+    return thisWeekTasks
+  }
+
+  addProject(title) {
+    this.projects.push(title)
+  }
+
+  deleteProject(index) {
+    this.projects.splice(index, 1)
+
+    // this.onProjectsChanged(this.projects)
+  }
+
+  getProjectTasks(projectTitle) {
+    return this.tasks.filter((task) => task.project === projectTitle)
+  }
+
+  // addProject(title) {
+  //   const newProject = new Project(title)
+
+  //   newProject.id =
+  //     this.projects.length > 0 ? this.projects[this.projects.length - 1].id + 1 : 1
+  //   this.projects.push(newProject)
+  // }
 }
 
 class View {
@@ -91,7 +146,7 @@ class View {
     this.main = this.createElement('main', 'main')
 
     this.title = this.createElement('h1')
-    this.title.textContent = 'Todo List'
+    this.title.textContent = 'Inbox'
 
     this.form = this.createElement('form')
 
@@ -105,11 +160,13 @@ class View {
 
     this.todoList = this.createElement('ul', 'todo-list')
 
+    this.sidebar = loadSidebar()
+
     this.form.append(this.input, this.submitBtn)
 
     this.main.append(this.title, this.form, this.todoList)
 
-    this.app.append(this.header, loadSidebar(), this.main)
+    this.app.append(this.header, this.sidebar, this.main)
 
     this.temporaryTaskTitle
     this._initLocalListeners()
@@ -140,10 +197,10 @@ class View {
     this.input.value = ''
   }
 
-  // displayProject(task) {
-  //   this.title.textContent = task.project
-  //   this.displayTasks(tasks)
-  // }
+  displayProject(project, tasks) {
+    // this.title.textContent = project
+    this.displayTasks(tasks)
+  }
 
   displayTasks(tasks) {
     while (this.todoList.firstChild) {
@@ -189,7 +246,9 @@ class View {
       e.preventDefault()
 
       if (this._taskTitle) {
-        handler({ title: this._taskTitle })
+        this.project
+          ? handler({ title: this._taskTitle, project: this.project })
+          : handler({ title: this._taskTitle })
         this._resetInput()
       }
     })
@@ -236,6 +295,91 @@ class View {
     })
   }
 
+  bindDisplayInbox(handler) {
+    const inbox = document.querySelector('#inbox')
+    inbox.addEventListener('click', (e) => {
+      this.title.textContent = 'Inbox'
+      this.project = null
+      handler()
+      this.toggleActive(inbox)
+    })
+  }
+
+  bindDisplayToday(handler) {
+    const today = document.querySelector('#today')
+    today.addEventListener('click', (e) => {
+      this.title.textContent = 'Today'
+      this.project = null
+      handler()
+      this.toggleActive(today)
+    })
+  }
+
+  bindDisplayThisWeek(handler) {
+    const thisWeek = document.querySelector('#this-week')
+    thisWeek.addEventListener('click', (e) => {
+      this.title.textContent = 'This Week'
+      this.project = null
+      handler()
+      this.toggleActive(thisWeek)
+    })
+  }
+
+  bindNewProject(handler) {
+    const newProjectBtn = document.querySelector('.new-project-btn')
+    newProjectBtn.addEventListener('click', (e) => {
+      handler('Test Project')
+    })
+  }
+
+  bindDeleteProject(handler) {
+    this.sidebar.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-project-btn')) {
+        const id = parseInt(e.target.parentElement.id)
+        handler(id)
+      }
+    })
+  }
+
+  bindDisplayProject(handler) {
+    this.sidebar.addEventListener('click', (e) => {
+      if (e.target.parentElement.classList.contains('project-link')) {
+        this.title.textContent = e.target.textContent
+        const id = parseInt(e.target.parentElement.id)
+        handler(id)
+      }
+    })
+  }
+
+  // bindDisplayProject(handler) {
+  //   const buttons = document.getElementsByClassName('project-btn')
+  // }
+
+  toggleActive(element) {
+    const links = document.querySelectorAll('.nav-link')
+
+    links.forEach((link) => {
+      if (link !== this) {
+        link.classList.remove('active-link')
+      }
+    })
+    element.classList.add('active-link')
+  }
+
+  onProjectsChanged(projects) {
+    const projectsList = document.querySelector('.project-links')
+    const newProjectBtn = projectsList.lastChild
+    projectsList.innerHTML = ''
+    projects.forEach((project, index) => {
+      projectsList.prepend(addProject(project, index))
+    })
+    projectsList.append(newProjectBtn)
+  }
+
+  updateTitle(title) {
+    this.title.textContent = title
+  }
+
   displayModal() {
     const modal = new Modal()
     this.app.append(modal.modal)
@@ -252,14 +396,45 @@ class Controller {
     this.view.bindToggleTask(this.handleToggleTask)
     this.view.bindEditTask(this.handleEditTask)
 
+    this.view.bindNewProject(this.handleNewProject)
+    this.view.bindDeleteProject(this.handleDeleteProject)
+    this.view.bindDisplayProject(this.handleDisplayProject)
+
+    this.view.bindDisplayInbox(this.displayInbox)
+    this.view.bindDisplayToday(this.handleDisplayToday)
+    this.view.bindDisplayThisWeek(this.handleDisplayThisWeek)
+
     this.model.bindTasksChanged(this.onTasksChanged)
 
     //Display initial todos
-    this.onTasksChanged(this.model.tasks)
+    this.displayInbox()
+  }
+
+  displayInbox = () => {
+    this.view.displayTasks(this.model.tasks)
   }
 
   onTasksChanged = (tasks) => {
-    this.view.displayTasks(tasks)
+    if (this.view.project) {
+      console.log(this.view.project)
+      const projectTasks = this.model.getProjectTasks(this.view.project)
+      this.view.displayTasks(projectTasks)
+    } else {
+      const currentPage = this.view.getElement('.active-link').id
+      switch (currentPage) {
+        case 'inbox':
+          this.view.displayTasks(tasks)
+          break
+        case 'today':
+          this.view.displayTasks(this.model.getToday())
+          break
+        case 'this-week':
+          this.view.displayTasks(this.model.getThisWeek())
+          break
+        default:
+          this.view.displayTasks(tasks)
+      }
+    }
   }
 
   handleAddTask = (task) => {
@@ -276,6 +451,32 @@ class Controller {
 
   handleToggleTask = (id) => {
     this.model.toggleTask(id)
+  }
+
+  handleDisplayToday = () => {
+    this.view.displayTasks(this.model.getToday())
+  }
+
+  handleDisplayThisWeek = () => {
+    this.view.displayTasks(this.model.getThisWeek())
+  }
+
+  handleNewProject = (title) => {
+    this.model.addProject(title)
+    this.view.onProjectsChanged(this.model.projects)
+  }
+
+  handleDeleteProject = (index) => {
+    this.model.deleteProject(index)
+    this.view.onProjectsChanged(this.model.projects)
+  }
+
+  handleDisplayProject = (index) => {
+    const projectTitle = this.model.projects[index]
+    const projectTasks = this.model.getProjectTasks(projectTitle)
+    this.view.displayTasks(projectTasks)
+    this.view.updateTitle(projectTitle)
+    this.view.project = projectTitle
   }
 }
 

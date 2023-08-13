@@ -20,6 +20,7 @@ li {
 a {
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
 }
 
 #root {
@@ -33,29 +34,77 @@ a {
 header {
   grid-column: 1 / -1;
   grid-row: 1 / 2;
-  height: 60px;
+  height: 50px;
   background-color: #007bff;
   text-align: center;
+  color: white;
 }
 
 .sidebar {
   min-height: 100vh;
+  padding-top: 2rem;
   grid-row: 2 / 3;
   grid-column: 1 / 2;
   display: grid;
   grid-template-rows: min-content;
-  background-color: grey;
+  background-color: #f4f4f4;
+  color: #444;
 }
 
 .sidebar-nav {
   height: 90vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 2rem;
+  /* justify-content: space-between; */
+}
+
+.sidebar i {
+  margin-right: 1rem;
+  min-width: 25px;
+  font-weight: inherit;
+}
+
+.sidebar a {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  align-items: center;
+  padding: 1rem 2rem;
+  color: var(--grey2);
+}
+
+.sidebar li:not(.active):hover {
+  background-color: #eee;
+}
+
+.sidebar h4 {
+  font-weight: bold;
+  padding: 0 1.5rem;
+}
+
+/* .project-link:first-of-type {
+  margin-top: 0.5rem;
+} */
+
+.project-link {
+  display: flex;
+}
+
+.new-project-btn {
+  padding: 0 1rem;
+}
+
+.delete-project-btn {
+  padding: 0 0.3rem;
+  margin: 1rem 0.5rem;
+}
+
+.delete-project-btn:hover {
+  transform: scale(1.1);
 }
 
 .main {
-  max-width: 450px;
+  width: clamp(300px, 75%, 100%);
   margin: 2rem auto;
   padding: 0 1rem;
   padding-right: 32px;
@@ -100,15 +149,13 @@ button {
 }
 
 h1 {
+  margin-bottom: 1rem;
   color: #222;
 }
 
-ul {
-  padding: 0;
-}
-
 main li {
-  display: flex;
+  display: grid;
+  grid-template-columns: min-content 1fr auto;
   align-items: center;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -132,4 +179,11 @@ main li span:focus {
   outline: 0;
   border: 2px solid #007bff;
   background: rgba(179, 207, 255, 0.52);
+}
+
+.active-link {
+  /* font-weight: bold; */
+  background-color: #e5e5e5;
+  border-radius: 4px;
+  color: #444;
 }

@@ -20,31 +20,82 @@ export default function loadSidebar() {
 
   const nav = createElement('nav', 'sidebar-nav')
   const navLinks = document.createElement('ul')
-  const inbox = document.createElement('li')
+  const inbox = createElement('li', 'nav-link')
+  inbox.classList.add('active-link')
+  inbox.setAttribute('id', 'inbox')
   const inboxLink = document.createElement('a')
-  inboxLink.textContent = 'Inbox'
-  const inboxIcon = createElement('span', 'material-symbols-outlined')
-  inboxIcon.textContent = 'face'
-  inbox.append(inboxIcon, inboxLink)
+  const inboxIcon = createElement('i', 'material-symbols-outlined')
+  inboxIcon.textContent = 'inbox'
+  inboxLink.append(inboxIcon)
+  inboxLink.append('Inbox')
+  inbox.append(inboxLink)
 
-  const today = document.createElement('li')
+  const today = createElement('li', 'nav-link')
+  today.setAttribute('id', 'today')
   const todayLink = document.createElement('a')
-  todayLink.textContent = 'Today'
-  const todayIcon = createElement('span', 'material-symbols-outlined')
-  todayIcon.textContent = 'task'
-  today.append(todayIcon, todayLink)
+  const todayIcon = createElement('i', 'material-symbols-outlined')
+  todayIcon.textContent = 'today'
+  todayLink.append(todayIcon)
+  todayLink.append('Today')
+  today.append(todayLink)
 
-  const thisWeek = document.createElement('li')
+  const thisWeek = createElement('li', 'nav-link')
+  thisWeek.setAttribute('id', 'this-week')
   const thisWeekLink = document.createElement('a')
-  thisWeekLink.textContent = 'This Week'
-  const thisWeekIcon = createElement('span', 'material-symbols-outlined')
-  thisWeekIcon.textContent = 'task'
-  thisWeek.append(thisWeekIcon, thisWeekLink)
+  const thisWeekIcon = createElement('i', 'material-symbols-outlined')
+  thisWeekIcon.textContent = 'calendar_month'
+  thisWeekLink.append(thisWeekIcon)
+  thisWeekLink.append('This Week')
+  thisWeek.append(thisWeekLink)
 
   navLinks.append(inbox, today, thisWeek)
   nav.appendChild(navLinks)
+
+  const projects = createElement('section', 'projects')
+
+  const projectsHeader = createElement('h4')
+  projectsHeader.textContent = 'Projects'
+
+  projects.appendChild(projectsHeader)
+
+  const projectLinks = createElement('ul', 'project-links')
+
+  const newProject = createElement('li', 'new-project-btn')
+  const projectLink1 = createElement('a')
+  const projectIcon = createElement('i', 'material-symbols-outlined')
+  projectIcon.textContent = 'create_new_folder'
+  projectLink1.append(projectIcon)
+  projectLink1.append('Add Project')
+
+  newProject.appendChild(projectLink1)
+
+  projectLinks.append(newProject)
+
+  projects.appendChild(projectLinks)
+
+  nav.appendChild(projects)
 
   sidebar.appendChild(nav)
 
   return sidebar
 }
+
+function addProject(title, id) {
+  const project = createElement('li', 'project-link')
+  const link = createElement('a')
+  const icon = createElement('i', 'material-symbols-outlined')
+  icon.textContent = 'folder'
+  link.append(icon)
+  link.append(title)
+
+  const deleteBtn = createElement('button', 'delete-project-btn')
+  deleteBtn.textContent = 'X'
+
+  project.append(link, deleteBtn)
+
+  project.id = id
+
+  return project
+}
+
+export { createElement, loadSidebar, addProject }
