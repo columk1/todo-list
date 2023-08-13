@@ -98,4 +98,31 @@ function addProject(title, id) {
   return project
 }
 
-export { createElement, loadSidebar, addProject }
+function addProjectPopup() {
+  const addProjectPopup = createElement('div', 'add-project-popup')
+  const form = createElement('form')
+  const input = createElement('input', 'input-add-project-popup')
+  input.id = 'input-add-project-popup'
+  input.type = 'text'
+
+  const buttons = createElement('div', 'add-project-popup-buttons')
+
+  const addBtn = createElement('button', 'add-project-popup-btn')
+  addBtn.textContent = 'Add'
+  addBtn.type = 'submit'
+  const cancelBtn = createElement('button', 'cancel-project-popup-btn')
+  cancelBtn.textContent = 'Cancel'
+
+  buttons.append(addBtn, cancelBtn)
+
+  form.append(input, buttons)
+  addProjectPopup.append(form)
+
+  return addProjectPopup
+}
+
+function show(element) {
+  element.classList.add('active')
+}
+
+export { createElement, loadSidebar, addProject, addProjectPopup, show }

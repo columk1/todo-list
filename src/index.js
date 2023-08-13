@@ -2,7 +2,13 @@ import './style.css'
 import Task from './task.js'
 import Project from './project.js'
 import Modal from './modal.js'
-import { loadSidebar, createElement, addProject } from './nav.js'
+import {
+  loadSidebar,
+  createElement,
+  addProject,
+  addProjectPopup,
+  show,
+} from './nav.js'
 // import 'material-symbols'
 
 const initialData = [
@@ -174,6 +180,9 @@ class View {
 
     this.sidebar = loadSidebar()
 
+    this.addProjectPopup = addProjectPopup()
+    this.sidebar.lastChild.lastChild.append(this.addProjectPopup)
+
     this.form.append(this.input, this.submitBtn)
 
     this.main.append(this.title, this.form, this.todoList)
@@ -340,10 +349,40 @@ class View {
     })
   }
 
-  bindNewProject(handler) {
+  initHandlers() {
     const newProjectBtn = document.querySelector('.new-project-btn')
+    const input = document.getElementById('input-add-project-popup')
     newProjectBtn.addEventListener('click', (e) => {
-      handler('Test Project')
+      show(this.addProjectPopup)
+      this.addProjectPopup.firstChild.focus()
+
+      const cancelBtn = document.querySelector('.cancel-project-popup-btn')
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault()
+        input.value = ''
+        this.addProjectPopup.classList.remove('active')
+      })
+    })
+  }
+
+  initProjectPopupHandlers() {
+    const cancelBtn = document.querySelector('.cancel-project-popup-btn')
+    cancelBtn.addEventListener('click', (e) => {
+      console.log(this.addProjectPopup.firstChild)
+      this.addProjectPopup.firstChild.value = ''
+      // this.addProjectPopup.classList.remove('active')
+    })
+  }
+
+  bindNewProject(handler) {
+    const addForm = this.addProjectPopup.firstChild
+    const input = document.getElementById('input-add-project-popup')
+    addForm.addEventListener('submit', (e) => {
+      console.log('Add clicked')
+      e.preventDefault()
+      handler(input.value)
+      input.value = ''
+      this.addProjectPopup.classList.remove('active')
     })
   }
 
@@ -432,6 +471,7 @@ class Controller {
 
     //Display initial todos
     this.displayInbox()
+    this.view.initHandlers()
   }
 
   displayInbox = () => {

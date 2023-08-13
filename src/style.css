@@ -73,7 +73,7 @@ header {
   color: var(--grey2);
 }
 
-.sidebar li:not(.active):hover {
+.sidebar li:not(.active-link):hover {
   background-color: #eee;
 }
 
@@ -88,6 +88,7 @@ header {
 
 .project-link {
   display: flex;
+  align-items: center;
 }
 
 .new-project-btn {
@@ -95,12 +96,44 @@ header {
 }
 
 .delete-project-btn {
-  padding: 0 0.3rem;
-  margin: 1rem 0.5rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 0px 14px;
+  margin: 0 10px 0 0;
 }
 
 .delete-project-btn:hover {
   transform: scale(1.1);
+}
+
+.add-project-popup form {
+  display: block;
+}
+
+.add-project-popup {
+  width: 80%;
+  margin: 0 auto;
+  display: none;
+}
+
+.add-project-popup.active {
+  display: block;
+}
+
+.add-project-popup-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.add-project-popup-buttons button {
+  margin: 0 0.1rem;
 }
 
 .main {
