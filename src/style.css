@@ -24,11 +24,10 @@ a {
 }
 
 #root {
-  width: 100vw;
+  max-width: 100vw;
   display: grid;
-  grid-template-columns: clamp(180px, 25%, 240px) 1fr;
+  grid-template-columns: max(16%, 220px) 1fr;
   grid-template-rows: min-content 1fr;
-  /* gap: 25px; */
 }
 
 header {
@@ -155,8 +154,9 @@ header {
 }
 
 form {
+  width: 50%;
   display: flex;
-  margin-bottom: 2rem;
+  margin: 0 0 1rem;
 }
 
 [type='text'],
@@ -170,6 +170,7 @@ button {
 }
 
 button {
+  height: 38px;
   cursor: pointer;
   background: #007bff;
   color: white;
@@ -199,7 +200,7 @@ h1 {
 
 main li {
   display: grid;
-  grid-template-columns: min-content 1fr auto;
+  grid-template-columns: min-content 1fr auto auto;
   align-items: center;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -210,7 +211,7 @@ main li {
 main li span {
   display: inline-block;
   padding: 0.5rem;
-  width: 250px;
+  width: max-content;
   border-radius: 4px;
   border: 2px solid transparent;
 }
@@ -225,10 +226,48 @@ main li span:focus {
   background: rgba(179, 207, 255, 0.52);
 }
 
+.due-date {
+  cursor: pointer;
+  height: 38px;
+  padding: 0.45rem 1rem;
+  margin: 0 0.5rem;
+  background: #e9e9e9;
+  border: 1px solid rgb(0, 0, 0, 0.02);
+  border-radius: 4px;
+}
+
+.input-due-date {
+  display: none;
+  height: 38px;
+  padding: 0.45rem 1rem;
+  border: 1px solid #555;
+  margin: 0 0.5rem;
+  background: #e9e9e9;
+  border: 1px solid rgb(0, 0, 0, 0.02);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.input-due-date.active {
+  display: block;
+}
+
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-week-field,
+::-webkit-datetime-edit-year-field {
+  cursor: text;
+}
+
 .active-link {
   /* font-weight: bold; */
   background-color: #e9e9e9;
   border-radius: 4px;
   border-left: 4px solid #007bff;
   color: #444;
+}
+
+.hidden {
+  display: none;
 }

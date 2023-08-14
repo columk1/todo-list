@@ -81,6 +81,13 @@ class Model {
     this.onTasksChanged(this.tasks)
   }
 
+  editDate(id, newDate) {
+    this.tasks = this.tasks.map((task) =>
+      task.id === id ? { ...task, dueDate: newDate } : task
+    )
+    this.onTasksChanged(this.tasks)
+  }
+
   deleteTask(id) {
     this.tasks = this.tasks.filter((task) => task.id !== id)
     this.onTasksChanged(this.tasks)
@@ -110,11 +117,10 @@ class Model {
     this.tasks.forEach((task) => {
       if (task.dueDate instanceof Date) {
         if (
-          task.dueDate.toDateString() >= new Date().toDateString() &&
-          task.dueDate.toDateString() <=
-            new Date(
-              new Date().setDate(new Date().getDate() + 7)
-            ).toDateString()
+          Date.parse(task.dueDate.toDateString()) >=
+            Date.parse(new Date().toDateString()) &&
+          Date.parse(task.dueDate) <=
+            Date.parse(new Date(new Date().setDate(new Date().getDate() + 7)))
         ) {
           thisWeekTasks.push(task)
         }
@@ -253,13 +259,26 @@ class View {
           span.textContent = task.title
         }
 
+        const dateContainer = createElement('div', 'date')
+        const dueDate = createElement('p', 'due-date')
+        if (task.dueDate instanceof Date) {
+          dueDate.textContent = task.dueDate.toLocaleDateString()
+        } else {
+          dueDate.textContent = 'No date'
+        }
+        const dateInput = createElement('input', 'input-due-date')
+        dateInput.type = 'date'
+
+        dateContainer.append(dueDate, dateInput)
+
         const deleteBtn = this.createElement('button', 'delete')
         deleteBtn.textContent = 'Delete'
-        li.append(checkbox, span, deleteBtn)
+        li.append(checkbox, span, dateContainer, deleteBtn)
 
         this.todoList.append(li)
       })
     }
+    this.initHandlers()
   }
 
   bindAddTask(handler) {
@@ -316,6 +335,15 @@ class View {
     })
   }
 
+  bindEditDate(handler) {
+    this.todoList.addEventListener('change', (e) => {
+      if (e.target.type === 'date') {
+        const id = parseInt(e.target.parentElement.parentElement.id)
+        handler(id, new Date(e.target.value + 'T00:00'))
+      }
+    })
+  }
+
   bindDisplayInbox(handler) {
     const inbox = document.querySelector('#inbox')
     inbox.addEventListener('click', (e) => {
@@ -363,12 +391,19 @@ class View {
         this.addProjectPopup.classList.remove('active')
       })
     })
+
+    const dueDate = document.querySelectorAll('.due-date')
+    dueDate.forEach((element) => {
+      element.addEventListener('click', (e) => {
+        e.target.classList.add('hidden')
+        e.target.nextSibling.classList.add('active')
+      })
+    })
   }
 
   initProjectPopupHandlers() {
     const cancelBtn = document.querySelector('.cancel-project-popup-btn')
     cancelBtn.addEventListener('click', (e) => {
-      console.log(this.addProjectPopup.firstChild)
       this.addProjectPopup.firstChild.value = ''
       // this.addProjectPopup.classList.remove('active')
     })
@@ -378,7 +413,6 @@ class View {
     const addForm = this.addProjectPopup.firstChild
     const input = document.getElementById('input-add-project-popup')
     addForm.addEventListener('submit', (e) => {
-      console.log('Add clicked')
       e.preventDefault()
       handler(input.value)
       input.value = ''
@@ -465,6 +499,7 @@ class Controller {
     this.view.bindDeleteTask(this.handleDeleteTask)
     this.view.bindToggleTask(this.handleToggleTask)
     this.view.bindEditTask(this.handleEditTask)
+    this.view.bindEditDate(this.handleEditDate)
 
     this.view.bindNewProject(this.handleNewProject)
     this.view.bindDeleteProject(this.handleDeleteProject)
@@ -489,7 +524,6 @@ class Controller {
 
   onTasksChanged = (tasks) => {
     if (this.view.project) {
-      console.log(this.view.project)
       const projectTasks = this.model.getProjectTasks(this.view.project)
       this.view.displayTasks(projectTasks)
     } else {
@@ -513,7 +547,6 @@ class Controller {
 
   onProjectsChanged = (projects) => {
     this.view.displayProjects(projects)
-    console.log(this.view.project)
     if (!projects.includes(this.view.project)) this.displayInbox()
   }
 
@@ -523,6 +556,10 @@ class Controller {
 
   handleEditTask = (id, newTitle) => {
     this.model.editTask(id, newTitle)
+  }
+
+  handleEditDate = (id, newDate) => {
+    this.model.editDate(id, newDate)
   }
 
   handleDeleteTask = (id) => {
@@ -559,5 +596,3 @@ class Controller {
 }
 
 init()
-
-console.log(app)
