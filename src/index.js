@@ -38,12 +38,15 @@ function init() {
 class Model {
   constructor() {
     // localStorage.clear()
-    this.tasks = JSON.parse(localStorage.getItem('tasks')) || []
-    this.projects = JSON.parse(localStorage.getItem('projects')) || []
+    if (localStorage.getItem('tasks')) {
+      this.tasks = JSON.parse(localStorage.getItem('tasks')) || []
+      this.projects = JSON.parse(localStorage.getItem('projects')) || []
+    } else {
+      initialData.forEach((task) => this.addTask(task))
+    }
+
     this.onTasksChanged = () => {}
     this.onProjectsChanged = () => {}
-
-    initialData.forEach((task) => this.addTask(task))
   }
 
   _commitTasks(tasks) {
@@ -165,7 +168,7 @@ class View {
     this.header = this.createElement('header')
 
     const logo = createElement('div', 'logo')
-    logo.textContent = 'Taskerooni'
+    logo.textContent = 'Todo List'
     const logoIcon = createElement('i', 'material-symbols-outlined')
     logoIcon.textContent = 'check_box'
     logo.append(logoIcon)
