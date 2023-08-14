@@ -1,5 +1,4 @@
 import 'material-symbols'
-import Logo from './assets/box.svg'
 
 function createElement(tag, className) {
   const element = document.createElement(tag)
@@ -10,14 +9,6 @@ function createElement(tag, className) {
 
 export default function loadSidebar() {
   const sidebar = createElement('div', 'sidebar')
-
-  const logo = createElement('div', 'logo')
-  const logoImg = new Image()
-  logoImg.src = Logo
-  logoImg.height = '40px'
-  logo.appendChild(logoImg)
-  logo.textContent = 'To Do List App'
-
   const nav = createElement('nav', 'sidebar-nav')
   nav.role = 'navigation'
   const navLinks = document.createElement('ul')

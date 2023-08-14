@@ -1,6 +1,5 @@
 import './style.css'
 import Task from './task.js'
-import Project from './project.js'
 import Modal from './modal.js'
 import {
   loadSidebar,
@@ -9,23 +8,21 @@ import {
   addProjectPopup,
   show,
 } from './nav.js'
-// import 'material-symbols'
 
 const initialData = [
   {
     id: 1,
-    title: 'Buy milk',
+    title: 'Find out what it all means',
     dueDate: new Date(),
     priority: 'low',
     isComplete: false,
   },
   {
     id: 2,
-    title: 'Buy eggs',
+    title: 'Buy socks',
     dueDate: new Date(),
     priority: 'high',
     isComplete: false,
-    project: 'Shopping',
   },
 ]
 
@@ -38,16 +35,25 @@ function init() {
   window.app = new Controller(new Model(), new View())
 }
 
-// Move this.onToDoListChanged to the Model, not the project class.
-
 class Model {
   constructor() {
-    this.tasks = []
-    this.projects = []
+    // localStorage.clear()
+    this.tasks = JSON.parse(localStorage.getItem('tasks')) || []
+    this.projects = JSON.parse(localStorage.getItem('projects')) || []
     this.onTasksChanged = () => {}
     this.onProjectsChanged = () => {}
 
     initialData.forEach((task) => this.addTask(task))
+  }
+
+  _commitTasks(tasks) {
+    this.onTasksChanged(tasks)
+    localStorage.setItem('tasks', JSON.stringify(tasks))
+  }
+
+  _commitProjects(projects) {
+    this.onProjectsChanged(projects)
+    localStorage.setItem('projects', JSON.stringify(projects))
   }
 
   bindTasksChanged(callback) {
@@ -71,33 +77,33 @@ class Model {
       this.tasks.length > 0 ? this.tasks[this.tasks.length - 1].id + 1 : 1
     this.tasks.push(newTask)
 
-    this.onTasksChanged(this.tasks)
+    this._commitTasks(this.tasks)
   }
 
   editTask(id, newTitle) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, title: newTitle } : task
     )
-    this.onTasksChanged(this.tasks)
+    this._commitTasks(this.tasks)
   }
 
   editDate(id, newDate) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, dueDate: newDate } : task
     )
-    this.onTasksChanged(this.tasks)
+    this._commitTasks(this.tasks)
   }
 
   deleteTask(id) {
     this.tasks = this.tasks.filter((task) => task.id !== id)
-    this.onTasksChanged(this.tasks)
+    this._commitTasks(this.tasks)
   }
 
   toggleTask(id) {
     this.tasks = this.tasks.map((task) =>
       task.id === id ? { ...task, isComplete: !task.isComplete } : task
     )
-    this.onTasksChanged(this.tasks)
+    this._commitTasks(this.tasks)
   }
 
   getToday() {
@@ -132,7 +138,7 @@ class Model {
   addProject(title) {
     this.projects.push(title)
 
-    this.onProjectsChanged(this.projects)
+    this._commitProjects(this.projects)
   }
 
   deleteProject(index) {
@@ -144,20 +150,12 @@ class Model {
     })
     this.projects.splice(index, 1)
 
-    this.onProjectsChanged(this.projects)
+    this._commitProjects(this.projects)
   }
 
   getProjectTasks(projectTitle) {
     return this.tasks.filter((task) => task.project === projectTitle)
   }
-
-  // addProject(title) {
-  //   const newProject = new Project(title)
-
-  //   newProject.id =
-  //     this.projects.length > 0 ? this.projects[this.projects.length - 1].id + 1 : 1
-  //   this.projects.push(newProject)
-  // }
 }
 
 class View {
@@ -165,7 +163,20 @@ class View {
     this.app = this.getElement('#root')
 
     this.header = this.createElement('header')
-    this.header.textContent = 'HEADER'
+
+    const logo = createElement('div', 'logo')
+    logo.textContent = 'Taskerooni'
+    const logoIcon = createElement('i', 'material-symbols-outlined')
+    logoIcon.textContent = 'check_box'
+    logo.append(logoIcon)
+
+    this.header.appendChild(logo)
+
+    this.openNavBtn = createElement('button', 'open-nav-btn')
+    this.openNavIcon = createElement('i', 'material-symbols-outlined')
+    this.openNavIcon.textContent = 'menu'
+    this.openNavBtn.appendChild(this.openNavIcon)
+    this.header.appendChild(this.openNavBtn)
 
     this.main = this.createElement('main', 'main')
 
@@ -321,6 +332,11 @@ class View {
         this._temporaryTaskTitle = e.target.innerText
       }
     })
+
+    this.openNavBtn.addEventListener('click', (e) => {
+      console.log('clicked')
+      this.sidebar.classList.toggle('active')
+    })
   }
 
   // Send the completed value to the model
@@ -422,7 +438,8 @@ class View {
 
   bindDeleteProject(handler) {
     this.sidebar.addEventListener('click', (e) => {
-      if (e.target.classList.contains('delete-project-btn')) {
+      console.log(e.target)
+      if (e.target.parentElement.classList.contains('delete-project-btn')) {
         const id = parseInt(e.target.parentElement.id)
         handler(id)
         e.stopImmediatePropagation()
@@ -547,6 +564,7 @@ class Controller {
 
   onProjectsChanged = (projects) => {
     this.view.displayProjects(projects)
+    // this.view.bindDeleteProject(this.handleDeleteProject)
     if (!projects.includes(this.view.project)) this.displayInbox()
   }
 
