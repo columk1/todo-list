@@ -402,6 +402,7 @@ class View {
         this.title.textContent = e.target.textContent
         const id = parseInt(e.target.parentElement.id)
         handler(id)
+        this.toggleActive(e.target.parentElement)
       }
     })
   }
@@ -414,6 +415,13 @@ class View {
     const links = document.querySelectorAll('.nav-link')
 
     links.forEach((link) => {
+      if (link !== this) {
+        link.classList.remove('active-link')
+      }
+    })
+
+    const projectLinks = document.querySelectorAll('.project-link')
+    projectLinks.forEach((link) => {
       if (link !== this) {
         link.classList.remove('active-link')
       }

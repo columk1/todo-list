@@ -19,11 +19,14 @@ export default function loadSidebar() {
   logo.textContent = 'To Do List App'
 
   const nav = createElement('nav', 'sidebar-nav')
+  nav.role = 'navigation'
   const navLinks = document.createElement('ul')
   const inbox = createElement('li', 'nav-link')
   inbox.classList.add('active-link')
   inbox.setAttribute('id', 'inbox')
   const inboxLink = document.createElement('a')
+  inboxLink.href = '#'
+  inboxLink.tabIndex = '0'
   const inboxIcon = createElement('i', 'material-symbols-outlined')
   inboxIcon.textContent = 'inbox'
   inboxLink.append(inboxIcon)
@@ -33,6 +36,8 @@ export default function loadSidebar() {
   const today = createElement('li', 'nav-link')
   today.setAttribute('id', 'today')
   const todayLink = document.createElement('a')
+  todayLink.href = '#'
+  todayLink.tabIndex = '0'
   const todayIcon = createElement('i', 'material-symbols-outlined')
   todayIcon.textContent = 'today'
   todayLink.append(todayIcon)
@@ -42,6 +47,8 @@ export default function loadSidebar() {
   const thisWeek = createElement('li', 'nav-link')
   thisWeek.setAttribute('id', 'this-week')
   const thisWeekLink = document.createElement('a')
+  thisWeekLink.href = '#'
+  thisWeekLink.tabIndex = '0'
   const thisWeekIcon = createElement('i', 'material-symbols-outlined')
   thisWeekIcon.textContent = 'calendar_month'
   thisWeekLink.append(thisWeekIcon)
@@ -62,6 +69,8 @@ export default function loadSidebar() {
 
   const newProject = createElement('li', 'new-project-btn')
   const projectLink1 = createElement('a')
+  projectLink1.href = '#'
+  projectLink1.tabIndex = '0'
   const projectIcon = createElement('i', 'material-symbols-outlined')
   projectIcon.textContent = 'create_new_folder'
   projectLink1.append(projectIcon)
@@ -83,13 +92,17 @@ export default function loadSidebar() {
 function addProject(title, id) {
   const project = createElement('li', 'project-link')
   const link = createElement('a')
+  link.href = '#'
+  link.tabIndex = '0'
   const icon = createElement('i', 'material-symbols-outlined')
   icon.textContent = 'folder'
   link.append(icon)
   link.append(title)
 
   const deleteBtn = createElement('button', 'delete-project-btn')
-  deleteBtn.textContent = 'X'
+  const deleteIcon = createElement('i', 'material-symbols-outlined')
+  deleteIcon.textContent = 'delete'
+  deleteBtn.appendChild(deleteIcon)
 
   project.append(link, deleteBtn)
 
