@@ -4,12 +4,17 @@
 
 A Todo List App
 
-<!-- #### Live Link : [Todo](https://todo.netlify.app/) -->
+#### Live Link : [Todo List](http://taskidermy.netlify.app)
 
 ## Features
 
+- Add, edit and remove tasks
+- Add dates and view tasks due today or due this week
+- Add and remove projects
+- Local Storage
+
 ## To Do
 
-- Consider using a currentProject variable in View to refactor Model methods (removing projectId search and just using currentProj.addTask etc.)
-- Add features:
+- View/edit task description
+- Modal to add task with additional properties
 - Accessibility
