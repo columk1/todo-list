@@ -277,7 +277,7 @@ class View {
         if (task.dueDate instanceof Date) {
           dueDate.textContent = task.dueDate.toLocaleDateString()
         } else {
-          dueDate.textContent = 'No date'
+          dueDate.textContent = 'Add date'
         }
         const dateInput = createElement('input', 'input-due-date')
         dateInput.type = 'date'
@@ -414,6 +414,17 @@ class View {
       element.addEventListener('click', (e) => {
         e.target.classList.add('hidden')
         e.target.nextSibling.classList.add('active')
+        e.stopImmediatePropagation()
+      })
+    })
+
+    const inputDueDate = document.querySelectorAll('.input-due-date')
+    inputDueDate.forEach((element) => {
+      element.addEventListener('focusout', (e) => {
+        console.log('Focusout')
+        e.target.classList.remove('active')
+        e.target.previousElementSibling.classList.remove('hidden')
+        e.stopImmediatePropagation()
       })
     })
   }
