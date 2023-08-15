@@ -108,6 +108,7 @@ function addProjectPopup() {
   const input = createElement('input', 'input-add-project-popup')
   input.id = 'input-add-project-popup'
   input.type = 'text'
+  input.required = true
 
   const buttons = createElement('div', 'add-project-popup-buttons')
 

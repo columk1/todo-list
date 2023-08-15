@@ -34,7 +34,7 @@ header {
   grid-column: 1 / -1;
   grid-row: 1 / 2;
   height: 50px;
-  padding: 0 1rem 0.1rem;
+  padding: 0 0.5rem 0.1rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -49,20 +49,19 @@ header {
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.6rem;
 }
 
 .logo i {
-  font-weight: bold;
-  font-size: 1.55rem;
-  padding-top: 0.1rem;
+  font-weight: 500;
+  font-size: 1.8rem;
+  padding-bottom: 0rem;
 }
 
 .open-nav-btn {
   display: none;
   place-content: center;
-  margin-right: 1.2rem;
   padding: 0;
 }
 
@@ -118,21 +117,15 @@ header {
   background-color: #e9e9e9;
 }
 
-.nav-link > a:focus {
-}
-
 .sidebar h4 {
   font-weight: bold;
   padding: 0 1.5rem;
   margin-bottom: 0.3rem;
 }
 
-/* .project-link:first-of-type {
-  margin-top: 0.5rem;
-} */
-
 .project-link {
   display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -323,5 +316,9 @@ main li span:focus {
 
   .sidebar {
     display: none;
+  }
+
+  main form {
+    width: 100%;
   }
 }

@@ -38,6 +38,8 @@ function init() {
 class Model {
   constructor() {
     // localStorage.clear()
+    this.tasks = []
+    this.projects = []
     if (localStorage.getItem('tasks')) {
       this.tasks = JSON.parse(localStorage.getItem('tasks')) || []
       this.projects = JSON.parse(localStorage.getItem('projects')) || []
@@ -139,9 +141,13 @@ class Model {
   }
 
   addProject(title) {
-    this.projects.push(title)
+    if (this.projects.includes(title)) {
+      alert(`The project "${title}" already exists`)
+    } else {
+      this.projects.push(title)
 
-    this._commitProjects(this.projects)
+      this._commitProjects(this.projects)
+    }
   }
 
   deleteProject(index) {
@@ -153,6 +159,7 @@ class Model {
     })
     this.projects.splice(index, 1)
 
+    this._commitTasks(this.tasks)
     this._commitProjects(this.projects)
   }
 
@@ -192,6 +199,7 @@ class View {
     this.input.type = 'text'
     this.input.placeholder = 'Add Task'
     this.input.name = 'task'
+    this.input.required = true
 
     this.submitBtn = this.createElement('button')
     this.submitBtn.textContent = 'Submit'
@@ -236,11 +244,6 @@ class View {
 
   _resetInput() {
     this.input.value = ''
-  }
-
-  displayProject(project, tasks) {
-    // this.title.textContent = project
-    this.displayTasks(tasks)
   }
 
   displayTasks(tasks) {
@@ -337,7 +340,6 @@ class View {
     })
 
     this.openNavBtn.addEventListener('click', (e) => {
-      console.log('clicked')
       this.sidebar.classList.toggle('active')
     })
   }
@@ -441,9 +443,8 @@ class View {
 
   bindDeleteProject(handler) {
     this.sidebar.addEventListener('click', (e) => {
-      console.log(e.target)
       if (e.target.parentElement.classList.contains('delete-project-btn')) {
-        const id = parseInt(e.target.parentElement.id)
+        const id = parseInt(e.target.parentElement.parentElement.id)
         handler(id)
         e.stopImmediatePropagation()
       }
@@ -488,16 +489,9 @@ class View {
     const newProjectBtn = projectsList.lastChild
     projectsList.innerHTML = ''
     projects.forEach((project, index) => {
-      projectsList.prepend(addProject(project, index))
+      projectsList.append(addProject(project, index))
     })
     projectsList.append(newProjectBtn)
-    // projects.some((project) => {
-    //   console.log('project.some running')
-    //   if (project !== this.project) {
-    //     console.log('if statement true')
-    //     this.displayInbox()
-    //   }
-    // })
   }
 
   updateTitle(title) {
@@ -534,6 +528,7 @@ class Controller {
 
     //Display initial todos
     this.displayInbox()
+    this.onProjectsChanged(this.model.projects)
     this.view.initHandlers()
   }
 
