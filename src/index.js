@@ -40,15 +40,15 @@ class Model {
     // localStorage.clear()
     this.tasks = []
     this.projects = []
+    this.onTasksChanged = () => {}
+    this.onProjectsChanged = () => {}
+
     if (localStorage.getItem('tasks')) {
       this.tasks = JSON.parse(localStorage.getItem('tasks')) || []
       this.projects = JSON.parse(localStorage.getItem('projects')) || []
     } else {
       initialData.forEach((task) => this.addTask(task))
     }
-
-    this.onTasksChanged = () => {}
-    this.onProjectsChanged = () => {}
   }
 
   _commitTasks(tasks) {
