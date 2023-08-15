@@ -141,13 +141,9 @@ class Model {
   }
 
   addProject(title) {
-    if (this.projects.includes(title)) {
-      alert(`The project "${title}" already exists`)
-    } else {
-      this.projects.push(title)
+    this.projects.push(title)
 
-      this._commitProjects(this.projects)
-    }
+    this._commitProjects(this.projects)
   }
 
   deleteProject(index) {
@@ -462,10 +458,6 @@ class View {
     })
   }
 
-  // bindDisplayProject(handler) {
-  //   const buttons = document.getElementsByClassName('project-btn')
-  // }
-
   toggleActive(element) {
     const links = document.querySelectorAll('.nav-link')
 
@@ -595,7 +587,14 @@ class Controller {
   }
 
   handleNewProject = (title) => {
-    this.model.addProject(title)
+    if (this.model.projects.includes(title)) {
+      alert(`The project "${title}" already exists`)
+    } else {
+      this.model.addProject(title)
+      this.view.displayTasks([])
+      this.view.updateTitle(title)
+      this.view.project = title
+    }
   }
 
   handleDeleteProject = (index) => {

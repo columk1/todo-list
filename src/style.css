@@ -161,7 +161,7 @@ header {
 
 .add-project-popup {
   width: 80%;
-  margin: 0 auto;
+  margin: 0.5rem auto 0;
   display: none;
 }
 
@@ -325,15 +325,16 @@ main li span:focus {
   .open-nav-btn {
     display: grid;
   }
-
   .sidebar {
     display: none;
+    padding-top: 0rem;
   }
-
+  .sidebar-nav {
+    gap: 1.5rem;
+  }
   .main {
     width: 100%;
   }
-
   main form {
     width: 100%;
   }
